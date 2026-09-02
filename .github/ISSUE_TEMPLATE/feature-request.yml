@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest a focused improvement to the portfolio.
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: opportunity
+    attributes:
+      label: What opportunity does this address?
+      description: Explain the visitor or maintainer need behind the request.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed direction
+      description: Describe the smallest useful outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Share other approaches if relevant.
