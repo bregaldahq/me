@@ -1,6 +1,6 @@
 # Bregalda Portfolio Experience Design
 
-**Status:** Approved in conversation on 2026-09-02  
+**Status:** Approved in conversation on 2026-09-02; project 04 replaced with ChaosSQL by user request on 2026-09-04
 **Repository:** `https://github.com/bregaldahq/me`  
 **Primary language:** English  
 **Primary conversion:** Open Ricardo Bregalda's LinkedIn profile
@@ -118,7 +118,7 @@ The site is a single English-language page with semantic landmarks and deep link
 3. ReconcileFlow project cycle
 4. Aeternis Log project cycle
 5. Workshop Management API project cycle
-6. CFG Analyzer project cycle
+6. ChaosSQL project cycle
 7. Bregalda studio statement
 8. LinkedIn contact finale
 9. Minimal footer with GitHub, LinkedIn, copyright, and reduced-motion-safe logo
@@ -214,21 +214,31 @@ architecture cutaway. It highlights PHP 8.2 without an MVC framework, DDD, Clean
 Architecture, MySQL 8, JWT, PHPUnit, PHPStan level 8, OpenAPI, Docker, Nginx,
 Kubernetes autoscaling, Terraform, and GitHub Actions.
 
-### 04 — CFG Analyzer
+### 04 — ChaosSQL
 
-**Headline:** `Make execution visible.`  
-**Repository:** `https://github.com/bregaldahq/cfg_analyzer`
+**Headline:** `Turn chaos into a test.`
+**Repository:** `https://github.com/bregaldahq/chaossql`
 
-The chapter shows three-address code becoming basic blocks and then a control-flow
-graph. During the scroll transition, source lines group into blocks; conditional
-and unconditional jumps create successor edges; loops become visible as returning
-connections.
+The chapter follows concurrent SQL operations from a failing invariant to a focused
+reproduction. ChaosSQL stress-tests workloads, checks invariants, classifies
+isolation anomalies, and reduces failing traces with causal delta debugging.
 
-The artifact uses a compact, valid source example and its corresponding CFG. It
-states that the Python tool has no external runtime dependencies and identifies
-blocks, maps labels, connects successors, and writes a formatted graph output. The
-limitations documented by the repository remain visible in a concise note rather
-than being hidden.
+The artifact is a clearly labeled synthetic lost-update illustration based on
+`examples/banking_lost_update/chaos.yaml`. Two transactions read balance 1000;
+withdrawals of 50 and 100 write 950 and 900. The ledger implies 850 while the
+overwritten account balance is 900. The visible invariant is
+`actual_balance == expected_balance`. A trace → shrink → `repro_test.go` sequence
+shows the tool's reproduction workflow, not a claimed live or measured output.
+Do not invent timing, coverage, trace-reduction ratios, or engine guarantees.
+
+Technical evidence names Go 1.25 (verified in `go.mod`, which supersedes the
+README's older version label), SQLite, PostgreSQL, MySQL, seeded scheduling,
+causal delta debugging, the Go testing SDK, HTML/JUnit reporting, and CI integration.
+Scenario outcomes depend on database engine and isolation level.
+
+During scroll, transactions interleave, the mismatched invariant gains emphasis,
+and irrelevant trace detail recedes before the reproduction artifact is shown.
+Keep every step readable in the static and reduced-motion variants.
 
 ## Studio and contact content
 
@@ -274,7 +284,7 @@ Each project has a recognizable emphasis within the approved palette:
 - ReconcileFlow: yellow signal light over purple and ink
 - Aeternis Log: green verification light over deep purple
 - Workshop API: warm yellow atmosphere with layered purple depth
-- CFG Analyzer: green flow paths over purple and ink
+- ChaosSQL: green transaction traces with yellow invariant signals over purple and ink
 
 ### Interaction
 

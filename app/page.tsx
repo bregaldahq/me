@@ -1,3 +1,4 @@
+import { PortfolioPage } from './portfolio/portfolio-page';
 export default function Home() {
-  return null;
+  return <PortfolioPage />;
 }

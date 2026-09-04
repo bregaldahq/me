@@ -14,7 +14,7 @@
 
 - The public site language is English; the canonical origin is `https://bregalda.com`.
 - The primary CTA text is `Connect on LinkedIn` and its exact destination is `https://www.linkedin.com/in/ricardomeneguzzibregalda`.
-- The project order is ReconcileFlow, Aeternis Log, Workshop Management API, CFG Analyzer.
+- The project order is ReconcileFlow, Aeternis Log, Workshop Management API, ChaosSQL.
 - Use only `#FCFBF8`, `#2A2140`, `#4B2E83`, `#F5C400`, `#22C55E`, their opacity variants, and colors embedded in the supplied SVGs.
 - Use the supplied SVG identity files unchanged; do not redraw, recolor, or replace the Bregalda marks.
 - Use Inter for display/body copy and JetBrains Mono for technical labels.
@@ -132,14 +132,14 @@ describe('PROJECTS', () => {
       'reconcileflow',
       'aeternis-log',
       'workshop-api',
-      'cfg-analyzer',
+      'chaossql',
     ]);
     expect(PROJECTS.map(({ id }) => id)).toEqual(PROJECT_IDS);
     expect(PROJECTS.map(({ artifact }) => artifact)).toEqual([
       'reconciliation',
       'merkle-proof',
       'service-order',
-      'control-flow',
+      'concurrency-trace',
     ]);
   });
 
@@ -149,7 +149,7 @@ describe('PROJECTS', () => {
       'Logic you can inspect.',
       'Proof that outlives the data.',
       'A business, modeled end to end.',
-      'Make execution visible.',
+      'Turn chaos into a test.',
     ]);
 
     for (const project of PROJECTS) {
@@ -166,7 +166,7 @@ describe('PROJECTS', () => {
     expect(PROJECTS[0].disclosure).toMatch(/repository snapshot/i);
     expect(PROJECTS[1].disclosure).toMatch(/representative demonstration/i);
     expect(PROJECTS[3].limitation).toBe(
-      'Labels must be unique; semantic validation and comments are not supported.',
+      'Scenario outcomes depend on the database engine and isolation level.',
     );
   });
 });
@@ -191,7 +191,7 @@ export const PROJECT_IDS = [
   'reconcileflow',
   'aeternis-log',
   'workshop-api',
-  'cfg-analyzer',
+  'chaossql',
 ] as const;
 
 export type ProjectId = (typeof PROJECT_IDS)[number];
@@ -199,7 +199,7 @@ export type ArtifactType =
   | 'reconciliation'
   | 'merkle-proof'
   | 'service-order'
-  | 'control-flow';
+  | 'concurrency-trace';
 export type BrandSignal = '#F5C400' | '#22C55E';
 
 export interface ProjectEvidence {
@@ -278,17 +278,18 @@ export const PROJECTS = [
     planet: { base: '#4B2E83', signal: '#F5C400', radius: 1.18, orbitRadius: 5.8, orbitOffset: 3.15, seed: 37 },
   },
   {
-    id: 'cfg-analyzer', sequence: '04', name: 'CFG Analyzer', navLabel: 'CFG Analyzer',
-    headline: 'Make execution visible.',
-    summary: 'A dependency-free Python tool turns three-address code into basic blocks, maps labels, connects successors, and writes a readable control-flow graph.',
-    repository: 'https://github.com/bregaldahq/cfg_analyzer',
-    artifact: 'control-flow',
-    technologies: ['Python 3.6+', 'No runtime dependencies', 'Basic blocks', 'Label mapping', 'Successor analysis'],
+    id: 'chaossql', sequence: '04', name: 'ChaosSQL', navLabel: 'ChaosSQL',
+    headline: 'Turn chaos into a test.',
+    summary: 'Stress SQL workloads, check invariants, and shrink failing execution traces into focused reproductions. Concurrency bugs become evidence you can inspect.',
+    repository: 'https://github.com/bregaldahq/chaossql',
+    artifact: 'concurrency-trace',
+    technologies: ['Go 1.25', 'SQLite', 'PostgreSQL', 'MySQL', 'Seeded scheduling', 'Causal delta debugging', 'Go testing SDK', 'GitHub Actions'],
     evidence: [
-      { label: 'Leaders', value: 'First instruction, labels, and lines after jumps' },
-      { label: 'Edges', value: 'Conditional fallthrough, jump targets, and loop returns' },
+      { label: 'Detection', value: 'Concurrent workloads, SQL invariants, and isolation anomalies' },
+      { label: 'Reduction', value: 'Causal delta debugging narrows failing traces to focused reproductions' },
+      { label: 'Delivery', value: 'Go testing SDK, standalone reproduction tests, HTML reports, and JUnit exports' },
     ],
-    limitation: 'Labels must be unique; semantic validation and comments are not supported.',
+    limitation: 'Scenario outcomes depend on the database engine and isolation level.',
     planet: { base: '#2A2140', signal: '#22C55E', radius: 0.9, orbitRadius: 4.9, orbitOffset: 4.7, seed: 47 },
   },
 ] as const satisfies readonly PortfolioProject[];
@@ -554,7 +555,7 @@ describe('PortfolioPage', () => {
       'Logic you can inspect.',
       'Proof that outlives the data.',
       'A business, modeled end to end.',
-      'Make execution visible.',
+      'Turn chaos into a test.',
     ]);
     expect(screen.getAllByRole('link', { name: 'Connect on LinkedIn' })).toHaveLength(3);
     expect(screen.getAllByRole('link', { name: /view .* on github/i })).toHaveLength(4);
@@ -678,7 +679,7 @@ git commit -m "feat: render the Bregalda portfolio story"
 - Create: `app/portfolio/projects/artifacts/reconcileflow-artifact.tsx`
 - Create: `app/portfolio/projects/artifacts/aeternis-artifact.tsx`
 - Create: `app/portfolio/projects/artifacts/workshop-artifact.tsx`
-- Create: `app/portfolio/projects/artifacts/cfg-artifact.tsx`
+- Create: `app/portfolio/projects/artifacts/chaossql-artifact.tsx`
 - Create: `app/portfolio/projects/artifacts/artifacts.module.css`
 - Modify: `app/portfolio/projects/project-cycle.tsx`
 
@@ -719,21 +720,46 @@ Render four representative record nodes, an SVG Merkle tree with visible connect
 
 Render service order `WO-2048` with the exact lifecycle `Received → Diagnosis → Awaiting approval → Executing → Finished → Delivered`. Pair it with four restrained architecture layers named `Presentation`, `Application`, `Domain`, and `Infrastructure`, and show the domain layer as independent from HTTP, PDO, and JWT.
 
-- [ ] **Step 5: Implement the CFG source-to-graph artifact**
+- [ ] **Step 5: Implement the ChaosSQL concurrency-trace artifact**
 
-Use this valid compact input:
+Render the banking lost-update scenario as a synthetic interleaving and an explicit
+invariant mismatch. The trace is illustrative, not a measurement or a live database
+connection. Use green for transaction evidence and yellow for the violated invariant.
 
-```text
-i = 0
-loop:
-if i >= n goto done
-i = i + 1
-goto loop
-done:
-result = i
+```tsx
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- Named visual demonstration, not a form fieldset or heading group. */
+import { Database, FileCode2, MoveRight } from 'lucide-react';
+import s from './artifacts.module.css';
+
+const INTERLEAVING = [
+  ['01', 'T1', 'Read balance', '1000'],
+  ['02', 'T2', 'Read balance', '1000'],
+  ['03', 'T1', 'Withdraw 50', '950'],
+  ['04', 'T2', 'Withdraw 100', '900'],
+] as const;
+
+export function ChaosSqlArtifact() {
+  return <div role="group" aria-label="ChaosSQL synthetic lost-update trace" data-project-artifact="concurrency-trace" className={`${s.surface} ${s.chaos}`}>
+    <div className={s.toolbar}><span><Database size={16} />chaossql</span><span className={s.mono}>banking_lost_update</span></div>
+    <div className={s.appBody}>
+      <div className={s.decision}><span className={s.eyebrow}>Concurrent withdrawals</span><span className={s.yellow}>Lost update / P4</span></div>
+      <table className={s.traceTable} aria-label="Concurrent withdrawal interleaving">
+        <thead><tr><th scope="col">Step</th><th scope="col">Tx</th><th scope="col">Operation</th><th scope="col">Balance</th></tr></thead>
+        <tbody>{INTERLEAVING.map(([step, transaction, operation, balance]) => <tr key={step} data-trace-step={step}><td>{step}</td><td><span data-transaction={transaction}>{transaction}</span></td><td>{operation}</td><td>{balance}</td></tr>)}</tbody>
+      </table>
+      <div className={s.invariant}>
+        <p className={s.eyebrow}>ledger_balance_consistency</p>
+        <p className={s.violation}>Invariant violated</p>
+        <code>actual_balance == expected_balance</code>
+        <dl><div><dt>Actual balance</dt><dd>$900</dd></div><div><dt>Expected from ledger</dt><dd>$850</dd></div></dl>
+        <p className={s.caption}>Two reads of 1000. One withdrawal overwritten.</p>
+      </div>
+      <div className={s.reproduction}><span>Trace</span><MoveRight size={14} aria-hidden="true" /><span>Shrink</span><MoveRight size={14} aria-hidden="true" /><span><FileCode2 size={14} aria-hidden="true" />repro_test.go</span></div>
+    </div>
+    <p className={s.disclaimer}>Synthetic illustration · no live database · balances are not measured output</p>
+  </div>;
+}
 ```
-
-Render blocks `B1` through `B4` and SVG edges `B1 → B2`, `B2 true → B4`, `B2 false → B3`, and `B3 → B2`. B1 initializes i; B2 tests the loop; B3 increments and jumps back; B4 assigns the result. Include the exact limitations note from project data.
 
 - [ ] **Step 6: Implement the exhaustive mapper and integrate it**
 
@@ -742,7 +768,7 @@ const PROJECT_ARTIFACTS: Record<ArtifactType, React.ComponentType> = {
   reconciliation: ReconcileFlowArtifact,
   'merkle-proof': AeternisArtifact,
   'service-order': WorkshopArtifact,
-  'control-flow': CfgArtifact,
+  'concurrency-trace': ChaosSqlArtifact,
 };
 
 export function ProjectArtifact({ type }: { type: ArtifactType }) {
