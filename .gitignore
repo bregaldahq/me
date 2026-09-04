@@ -40,3 +40,8 @@ next-env.d.ts
 /tmp/
 /.superdesign/tmp/
 /.superpowers/
+/.worktrees/
+/reports/
+/test-results/
+/playwright-report/
+/.lighthouseci/
