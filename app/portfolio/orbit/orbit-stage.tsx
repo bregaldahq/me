@@ -1,4 +1,4 @@
-/* oxlint-disable next/no-img-element -- Static SVG identity and build-optimized WebP need no runtime image service. */
+/* oxlint-disable next/no-img-element -- A static SVG identity needs no runtime image service. */
 import type { PortfolioProject } from '../project-data';
 import styles from './orbit-stage.module.css';
 export function OrbitStage({
@@ -35,15 +35,6 @@ export function OrbitStage({
         </a>
       </div>
       <div className={styles.visual} data-orbit-visual>
-        <img
-          data-orbit-fallback
-          className={styles.poster}
-          src="/media/orbit-fallback.webp"
-          alt=""
-          width="1600"
-          height="1000"
-          fetchPriority="high"
-        />
         <div className={styles.monogram}>
           <img
             src="/brand/bregalda_monogram.svg"

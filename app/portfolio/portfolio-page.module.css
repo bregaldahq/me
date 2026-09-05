@@ -109,7 +109,10 @@
 }
 .story {
   position: relative;
-  background: var(--ink);
+  /* Deep space, measured off the poster: its centre reads #150f26 against the
+     page's own --ink at #2a2140, which was washing the sky out. Derived from
+     the brand token rather than pinned to a new colour. */
+  background: color-mix(in srgb, var(--ink) 55%, #05030c);
   color: var(--cream);
   isolation: isolate;
 }

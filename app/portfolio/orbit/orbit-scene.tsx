@@ -3,7 +3,12 @@
 import { createRoot, useFrame, useThree } from '@react-three/fiber';
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
 import { WebGLRenderer } from 'three';
-import { DPR_CAPS, downgradeTier, type AnimatedTier } from '../performance';
+import {
+  downgradeScale,
+  downgradeTier,
+  sceneDpr,
+  type AnimatedTier,
+} from '../performance';
 import type { OrbitSceneProps } from './scene-types';
 import { JourneyWorld } from './journey-world';
 
@@ -17,7 +22,8 @@ function RendererLifecycle({
   tier: AnimatedTier;
   lowerTier: (tier: AnimatedTier) => void;
 }) {
-  const { gl, setFrameloop, invalidate, setDpr } = useThree();
+  const { gl, size, setFrameloop, invalidate, setDpr } = useThree();
+  const [scale, setScale] = useState(1);
   const first = useRef(true);
   const slow = useRef(0);
   const readyFrame = useRef(0);
@@ -54,9 +60,12 @@ function RendererLifecycle({
       observer.disconnect();
     };
   }, [gl, invalidate, onFailure, setFrameloop]);
+  // Rotating a phone changes the budget's shape, so the fit is re-derived on resize.
   useEffect(() => {
-    setDpr(Math.min(window.devicePixelRatio, DPR_CAPS[tier]));
-  }, [setDpr, tier]);
+    setDpr(
+      sceneDpr(tier, size.width, size.height, window.devicePixelRatio) * scale,
+    );
+  }, [scale, setDpr, size.height, size.width, tier]);
   useFrame((_, delta) => {
     if (first.current && layoutRef.current.span > 0) {
       first.current = false;
@@ -67,6 +76,12 @@ function RendererLifecycle({
     if (next !== tier && next !== 'static') {
       slow.current = 0;
       lowerTier(next);
+      return;
+    }
+    const scaled = downgradeScale(tier, scale, slow.current);
+    if (scaled !== scale) {
+      slow.current = 0;
+      setScale(scaled);
     }
   });
   return null;
@@ -106,7 +121,6 @@ class WorldBoundary extends Component<
 
 export function OrbitScene({
   tier,
-  storyRef,
   layoutRef,
   onReady,
   onFailure,
@@ -141,20 +155,28 @@ export function OrbitScene({
       renderer = new WebGLRenderer({
         canvas,
         alpha: true,
-        antialias: tier !== 'low',
+        // Every tier now renders near the display's own density, where multisampling
+        // is what keeps a sphere's edge from reading as a polygon.
+        antialias: true,
         powerPreference: 'low-power',
       });
       renderer.debug.onShaderError = () => {
         if (!cancelled) onFailure();
       };
       root = createRoot(canvas);
+      const initial = size();
       void root
         .configure({
           gl: renderer,
           orthographic: true,
           camera: { position: [0, 0, 1000], zoom: 1, near: 0.1, far: 2000 },
-          dpr: Math.min(DPR_CAPS[tier], window.devicePixelRatio),
-          size: size(),
+          dpr: sceneDpr(
+            tier,
+            initial.width,
+            initial.height,
+            window.devicePixelRatio,
+          ),
+          size: initial,
         })
         .then(() => {
           if (cancelled) return;
@@ -162,7 +184,6 @@ export function OrbitScene({
             <WorldBoundary onFailure={onFailure}>
               <SceneContent
                 tier={tier}
-                storyRef={storyRef}
                 layoutRef={layoutRef}
                 onReady={onReady}
                 onFailure={onFailure}
@@ -189,7 +210,7 @@ export function OrbitScene({
       if (root) root.unmount();
       else renderer?.dispose();
     };
-  }, [layoutRef, onFailure, onReady, storyRef, tier]);
+  }, [layoutRef, onFailure, onReady, tier]);
   return (
     <div
       ref={containerRef}

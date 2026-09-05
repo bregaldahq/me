@@ -12,7 +12,7 @@ const sizes = [
   [2560, 1440],
 ];
 
-test('resizing a high-density phone preserves the low rendering budget', async ({
+test('a high-density phone renders above 1x and stays inside the pixel budget', async ({
   browser,
   baseURL,
 }) => {
@@ -26,24 +26,27 @@ test('resizing a high-density phone preserves the low rendering budget', async (
     'data-motion',
     'ready',
   );
-  await page.setViewportSize({ width: 844, height: 390 });
-  await expect
-    .poll(() =>
-      page
-        .locator('canvas')
-        .evaluate((node) => (node as HTMLCanvasElement).width),
-    )
-    .toBe(844);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await expect
-    .poll(() =>
-      page
-        .locator('canvas')
-        .evaluate((node) => (node as HTMLCanvasElement).width),
-    )
-    .toBe(390);
+  const buffer = () =>
+    page.locator('canvas').evaluate((node) => {
+      const canvas = node as HTMLCanvasElement;
+      const box = canvas.getBoundingClientRect();
+      return {
+        pixels: canvas.width * canvas.height,
+        ratio: canvas.width / box.width,
+      };
+    });
+  for (const size of [
+    { width: 844, height: 390 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(size);
+    await expect.poll(async () => (await buffer()).ratio).toBeGreaterThan(1.05);
+    // PIXEL_BUDGETS.low, which the phone is nowhere near spending on area alone.
+    expect((await buffer()).pixels).toBeLessThanOrEqual(1_500_000);
+  }
   await context.close();
 });
+
 for (const [width, height] of sizes) {
   test(`animated page fits ${width}x${height}`, async ({ page }) => {
     const errors: string[] = [];
@@ -53,10 +56,6 @@ for (const [width, height] of sizes) {
     await expect(page.locator('[data-orbit-story]')).toHaveAttribute(
       'data-motion',
       'ready',
-    );
-    await expect(page.locator('[data-orbit-fallback]')).toHaveCSS(
-      'opacity',
-      '0',
     );
     for (const label of await page.locator('[data-orbit-project]').all())
       await expect(label).toBeInViewport();

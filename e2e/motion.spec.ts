@@ -81,7 +81,6 @@ test('scroll moves one persistent planetary scene and reveals each product', asy
   const before = await first
     .locator('[data-artifact-reveal]')
     .evaluate((node) => getComputedStyle(node).transform);
-  await expect(page.locator('[data-orbit-fallback]')).toHaveCSS('opacity', '0');
   await page.screenshot({ path: 'reports/motion-opening-desktop.png' });
   for (const id of [
     'reconcileflow',

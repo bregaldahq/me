@@ -1,76 +1,103 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import {
   BufferGeometry,
-  Float32BufferAttribute,
   Group,
-  MathUtils,
   Mesh,
+  PlaneGeometry,
   Points,
-  PointsMaterial,
+  RepeatWrapping,
   SphereGeometry,
+  NoColorSpace,
+  TextureLoader,
   type Material,
+  type ShaderMaterial,
+  type Texture,
 } from 'three';
 import { PROJECTS } from '../project-data';
 import type { OrbitSceneProps } from './scene-types';
-import { createPlanetMaterial } from './planet-material';
-import { easeRange, journeyState } from './journey-state';
+import { applyPlanetMap, createPlanetMaterial } from './planet-material';
+import { planetPlacements } from './journey-choreography';
+import { createSpaceMaterial } from './space-material';
+import { createStarField } from './star-field';
+import { journeyState } from './journey-state';
+
+/**
+ * Baked stone, fetched only once the scene is actually animating. The static
+ * poster never pays for it.
+ */
+function loadPlanetMaps(
+  planets: readonly Mesh[],
+  anisotropy: number,
+  loaded: Texture[],
+  small: boolean,
+) {
+  const loader = new TextureLoader();
+  PROJECTS.forEach((project, index) => {
+    const file = `${project.id}${small ? '-sm' : ''}.webp`;
+    loader.load(`/media/planets/${file}`, (texture) => {
+      texture.colorSpace = NoColorSpace;
+      texture.wrapS = RepeatWrapping;
+      texture.anisotropy = anisotropy;
+      loaded.push(texture);
+      const material = planets[index]?.material;
+      if (material && !Array.isArray(material))
+        applyPlanetMap(material as ShaderMaterial, texture);
+    });
+  });
+}
+
+/** Size ratios live with the themes; the choreography only needs the numbers. */
+const PLANET_RADII = PROJECTS.map((project) => project.planet.radius);
 
 function makeJourneyWorld(low: boolean) {
   const world = new Group();
-  const segments = low ? 24 : 48;
-  const planets = PROJECTS.map((project) => {
+  const space = new Mesh(new PlaneGeometry(1, 1), createSpaceMaterial());
+  space.position.z = -600;
+  space.renderOrder = -1;
+  world.add(space);
+  // Low-poly spheres show their silhouette once the planets fill a phone's hero.
+  const segments = low ? 40 : 64;
+  const planets = PROJECTS.map((project, index) => {
     const material = createPlanetMaterial(project.planet);
     const mesh = new Mesh(
       new SphereGeometry(1, segments, segments / 2),
       material,
     );
-    mesh.position.z = -250;
+    // Each planet owns a depth. Sharing one plane made the spheres intersect
+    // during the departure, which reads as a seam cut across the stone.
+    mesh.position.z = -260 - (PROJECTS.length - 1 - index) * 45;
     world.add(mesh);
     return mesh;
   });
-  // Fixed seed, one draw call. Parallax is driven by scroll, not an autonomous flight loop.
-  const starPositions: number[] = [];
-  for (let i = 0; i < (low ? 100 : 230); i++) {
-    const n = Math.sin(i * 127.1 + 53.7) * 43758.5453;
-    const m = Math.sin(i * 311.7 + 17.3) * 24731.378;
-    starPositions.push(
-      (n - Math.floor(n)) * 2 - 1,
-      (m - Math.floor(m)) * 2 - 1,
-      (i % 11) / 11,
-    );
-  }
-  const starGeo = new BufferGeometry();
-  starGeo.setAttribute(
-    'position',
-    new Float32BufferAttribute(starPositions, 3),
-  );
-  const stars = new Points(
-    starGeo,
-    new PointsMaterial({
-      color: '#d2c5f4',
-      size: low ? 1.2 : 1.5,
-      transparent: true,
-      opacity: 0.45,
-      depthWrite: false,
-      sizeAttenuation: false,
-    }),
-  );
+  const stars = createStarField(low ? 340 : 900);
   world.add(stars);
-  return { world, planets, stars };
+  return { world, planets, stars, space };
 }
 
 export function JourneyWorld({
   layoutRef,
   tier,
 }: Pick<OrbitSceneProps, 'layoutRef' | 'tier'>) {
+  const { gl } = useThree();
   const assets = useMemo(() => makeJourneyWorld(tier === 'low'), [tier]);
   const assetsRef = useRef<ReturnType<typeof makeJourneyWorld> | null>(null);
+  const spin = useRef(0);
   useEffect(() => {
     assetsRef.current = assets;
+    const maps: Texture[] = [];
+    // A sphere's texture is steeply foreshortened towards the limb, which is
+    // where anisotropic filtering earns its keep.
+    loadPlanetMaps(
+      assets.planets,
+      Math.min(4, gl.capabilities.getMaxAnisotropy()),
+      maps,
+      tier === 'low',
+    );
     return () => {
+      maps.forEach((map) => map.dispose());
       const geometries = new Set<BufferGeometry>();
       const materials = new Set<Material>();
       assets.world.traverse((object) => {
@@ -85,8 +112,8 @@ export function JourneyWorld({
       geometries.forEach((geometry) => geometry.dispose());
       materials.forEach((material) => material.dispose());
     };
-  }, [assets]);
-  useFrame(({ size }) => {
+  }, [assets, gl, tier]);
+  useFrame(({ size }, delta) => {
     const assets = assetsRef.current;
     if (!assets) return;
     const layout = layoutRef.current;
@@ -94,47 +121,46 @@ export function JourneyWorld({
     if (!layout.span) return;
     const p = layout.journeyProgress;
     const state = journeyState(p);
-    const compact = size.width < 1024;
-    const departure = state.departure;
-    assets.planets.forEach((planet, i) => {
-      const angle = Math.PI / 2 - (i * Math.PI) / 2;
-      const heroX =
-        layout.x - size.width / 2 + Math.cos(angle) * layout.span * 0.36;
-      const heroY =
-        size.height / 2 -
-        (layout.y - layout.scroll - layout.navHeight) +
-        Math.sin(angle) * layout.span * 0.285;
-      const backgroundX =
-        size.width * (0.4 + i * 0.19) +
-        Math.sin(p * 0.4 + i) * size.width * 0.1;
-      const backgroundY =
-        size.height * (0.05 - i * 0.24) +
-        Math.cos(p * 0.5 + i) * size.height * 0.16;
-      planet.position.x = MathUtils.lerp(heroX, backgroundX, departure);
-      planet.position.y = MathUtils.lerp(heroY, backgroundY, departure);
-      const radius = MathUtils.lerp(
-        layout.span * 0.12 * PROJECTS[i].planet.radius,
-        size.width * (i === 0 ? 0.39 : 0.17) * (1 - state.arrival * 0.7),
-        departure,
-      );
-      planet.scale.setScalar(radius);
-      planet.rotation.set(i * 0.36, p * 0.32 + i, i * 0.42);
-      const uniforms = planet.material.uniforms;
-      uniforms.uOpacity.value = MathUtils.lerp(
-        1,
-        (compact ? 0.23 : 0.46) * (i === 0 ? 1 : 0.36),
-        departure,
-      );
-      uniforms.uIllumination.value = 1;
-      uniforms.uMorph.value = easeRange(p, 2, 4) * 0.2;
-    });
-    assets.stars.scale.set(size.width, size.height, 100);
-    assets.stars.position.set(
-      Math.sin(p * 0.3) * size.width * 0.1,
-      p * size.height * 0.035,
-      -400,
+    const heroX = layout.x - size.width / 2;
+    const heroY =
+      size.height / 2 - (layout.y - layout.scroll - layout.navHeight);
+    // The pool belongs to the opening cluster, so it leaves with it and the
+    // chapters keep the page's own background.
+    assets.space.position.set(heroX, heroY, -600);
+    assets.space.scale.set(layout.span * 3.5, layout.span * 3.1, 1);
+    assets.space.material.uniforms.uOpacity.value = 1 - state.departure;
+    assets.space.visible = state.departure < 0.999;
+    const placements = planetPlacements(
+      {
+        width: size.width,
+        height: size.height,
+        span: layout.span,
+        heroX,
+        heroY,
+        progress: p,
+      },
+      PLANET_RADII,
     );
+    assets.planets.forEach((planet, i) => {
+      const placement = placements[i];
+      planet.position.x = placement.x;
+      planet.position.y = placement.y;
+      planet.scale.setScalar(placement.radius);
+      // Rotation accumulates instead of being a function of scroll alone, so a
+      // planet keeps turning while the reader is still.
+      planet.rotation.y += delta * 0.05 + (p - spin.current) * 0.3;
+      planet.rotation.x = i * 0.36;
+      planet.rotation.z = i * 0.42;
+    });
+    spin.current = p;
+    assets.stars.scale.set(size.width, size.height, 100);
+    assets.stars.position.z = -400;
     assets.stars.rotation.z = p * -0.035;
+    const starUniforms = assets.stars.material.uniforms;
+    starUniforms.uPixelRatio.value = gl.getPixelRatio();
+    // In the star field's own unit space, so a near star drifts further.
+    starUniforms.uDrift.value[0] = Math.sin(p * 0.3) * 0.14;
+    starUniforms.uDrift.value[1] = p * 0.05;
   });
   return <primitive object={assets.world} />;
 }

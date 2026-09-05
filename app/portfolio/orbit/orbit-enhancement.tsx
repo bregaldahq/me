@@ -154,7 +154,6 @@ export function OrbitEnhancement() {
         <SceneBoundary onFailure={onFailure}>
           <Scene
             tier={tier}
-            storyRef={storyRef}
             layoutRef={layoutRef}
             onReady={onReady}
             onFailure={onFailure}

@@ -61,16 +61,6 @@
   aspect-ratio: 1.12;
   z-index: 1;
 }
-.poster {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  mask-image: radial-gradient(ellipse 60% 57%, #000 48%, transparent 91%);
-  transition: opacity 1.1s ease;
-}
-:global([data-motion='ready']) .poster {
-  opacity: 0;
-}
 :global([data-motion='ready']) .monogram {
   opacity: calc(1 - var(--hero-departure, 0));
   transform: translate(-50%, -50%)

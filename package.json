@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npm run build && playwright test",
     "dev": "vinext dev",
+    "planet-maps": "node scripts/generate-planet-maps.mjs",
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
     "deploy:cloudflare": "wrangler deploy --config dist/server/wrangler.json --name bregalda-com",

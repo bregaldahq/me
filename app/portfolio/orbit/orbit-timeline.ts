@@ -37,8 +37,5 @@ export function getStoryState(progress: number, projectCount = 4): StoryState {
     approach,
     artifact,
     evidence,
-    orbitOpacity: 1 - approach,
-    orbitRotation: ((projectIndex + returning) * Math.PI) / 2,
-    cameraZ: 8 - approach * 4.5,
   };
 }

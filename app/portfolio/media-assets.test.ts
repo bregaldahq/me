@@ -1,21 +1,42 @@
 // @vitest-environment node
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 // Vinext declares the optional bare "sharp" module as unknown; use the installed package's own types.
 import sharp from 'sharp/lib/index.js';
+import { PROJECT_IDS } from './project-data';
 
 describe('portfolio media budget', () => {
-  it('delivers a complete lightweight orbital poster', async () => {
-    const path = new URL(
-      '../../public/media/orbit-fallback.webp',
-      import.meta.url,
-    );
-    const [bytes, info] = await Promise.all([readFile(path), stat(path)]);
-    expect(bytes.subarray(8, 12).toString()).toBe('WEBP');
-    expect(info.size).toBeLessThan(700 * 1024);
-    const metadata = await sharp(bytes).metadata();
-    expect([metadata.width, metadata.height]).toEqual([1600, 1000]);
-  });
+  it.each([
+    ['', 1536, 768, 1700],
+    ['-sm', 768, 384, 560],
+  ])(
+    'ships a %s material map per planet at %ix%i, under %i KB in total',
+    async (suffix, width, height, budget) => {
+      const maps = await Promise.all(
+        PROJECT_IDS.map(async (id) => {
+          const bytes = await readFile(
+            new URL(
+              `../../public/media/planets/${id}${suffix}.webp`,
+              import.meta.url,
+            ),
+          );
+          return { id, bytes, metadata: await sharp(bytes).metadata() };
+        }),
+      );
+      for (const { id, metadata } of maps) {
+        // Equirectangular, so width is twice height, and the fourth channel
+        // carries the accent mask alongside the normal and the tone.
+        expect([id, metadata.width, metadata.height]).toEqual([
+          id,
+          width,
+          height,
+        ]);
+        expect([id, metadata.hasAlpha]).toEqual([id, true]);
+      }
+      const total = maps.reduce((sum, { bytes }) => sum + bytes.length, 0);
+      expect(total).toBeLessThan(budget * 1024);
+    },
+  );
   it('provides a correctly sized lightweight social preview', async () => {
     const bytes = await readFile(
       new URL('../../public/og.png', import.meta.url),

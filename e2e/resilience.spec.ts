@@ -26,7 +26,7 @@ test('renderer allocation failure after a successful probe uses the static fallb
   await expect(page.locator('canvas')).toHaveCount(0);
 });
 
-test('the poster stays visible while the choreography module is still downloading', async ({
+test('the opening waits on its own background while the choreography downloads', async ({
   page,
 }) => {
   let release = () => {};
@@ -42,10 +42,14 @@ test('the poster stays visible while the choreography module is still downloadin
   try {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect.poll(() => blocked).toBe(true);
-    await expect(page.locator('[data-orbit-fallback]')).toHaveCSS(
-      'opacity',
-      '1',
+    await expect(page.locator('[data-orbit-story]')).toHaveAttribute(
+      'data-motion',
+      'loading',
     );
+    // The hero waits on its own background: there is no stand-in picture left
+    // to swap out, and the copy stays readable throughout.
+    await expect(page.locator('#work-title')).toBeVisible();
+    await expect(page.locator('[data-orbit-fallback]')).toHaveCount(0);
   } finally {
     release();
   }
@@ -56,7 +60,7 @@ test('the poster stays visible while the choreography module is still downloadin
 });
 
 for (const chunk of ['orbit-scene', 'ScrollTrigger']) {
-  test(`a failed ${chunk} download restores the poster and full contrast content`, async ({
+  test(`a failed ${chunk} download falls back to the readable static page`, async ({
     page,
   }) => {
     let blocked = 0;
@@ -70,11 +74,10 @@ for (const chunk of ['orbit-scene', 'ScrollTrigger']) {
       'data-motion',
       'static',
     );
-    await expect(page.locator('[data-orbit-fallback]')).toHaveCSS(
-      'opacity',
-      '1',
-    );
     await expect(page.locator('canvas')).toHaveCount(0);
+    // Without the scene the hero is typographic; the reading below it is what
+    // has to survive, and it does.
+    await expect(page.locator('#work-title')).toBeVisible();
     await expect(page.locator('[data-artifact-reveal]').first()).toHaveCSS(
       'opacity',
       '1',
@@ -83,7 +86,7 @@ for (const chunk of ['orbit-scene', 'ScrollTrigger']) {
 }
 
 for (const mode of ['save-data', 'no-webgl'] as const) {
-  test(`${mode} keeps the poster and all content without a renderer`, async ({
+  test(`${mode} keeps every piece of content without a renderer`, async ({
     page,
   }) => {
     await page.addInitScript((mode) => {
@@ -118,10 +121,7 @@ for (const mode of ['save-data', 'no-webgl'] as const) {
       'static',
     );
     await expect(page.locator('canvas')).toHaveCount(0);
-    await expect(page.locator('[data-orbit-fallback]')).toHaveCSS(
-      'opacity',
-      '1',
-    );
+    await expect(page.locator('#work-title')).toBeVisible();
     await expect(page.locator('article')).toHaveCount(4);
     expect(sceneRequests).toEqual([]);
   });

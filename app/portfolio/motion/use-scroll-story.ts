@@ -98,10 +98,15 @@ export function useScrollStory(
           layoutRef.current.scroll = window.scrollY;
           const journey = journeyProgressAt(window.scrollY, journeyAnchors);
           layoutRef.current.journeyProgress = journey;
-          const departure = gsap.utils.clamp(0, 1, journey);
+          // One clock for the whole opening: the same easing the planets use
+          // now also moves the copy, the monogram and the poster.
+          const departure = journeyState(journey).departure;
+          // The scene dims as one layer. Per-planet alpha turned overlapping
+          // planets into glass, and it is the layer that has to sit behind text.
+          const settled = window.innerWidth < 1024 ? 0.34 : 0.5;
           story.style.setProperty(
             '--scene-opacity',
-            String(window.innerWidth < 1024 ? 1 - departure * 0.64 : 1),
+            String(1 - departure * (1 - settled)),
           );
           story.dataset.journeyChapter = journeyState(journey).chapter;
           story.style.setProperty('--journey-progress', String(journey / 6));
@@ -111,16 +116,7 @@ export function useScrollStory(
           );
           storyRef.current = state;
           story.dataset.storyPhase = state.phase;
-          story.style.setProperty('--story-progress', String(state.progress));
-          hero.style.setProperty(
-            '--hero-departure',
-            String(
-              Math.min(
-                1,
-                window.scrollY / Math.max(1, hero.offsetHeight * 0.7),
-              ),
-            ),
-          );
+          hero.style.setProperty('--hero-departure', String(departure));
           document.documentElement.dataset.activeProject =
             chapters[state.projectIndex]?.dataset.projectId ?? '';
           chapters.forEach((chapter, index) => {
@@ -196,7 +192,6 @@ export function useScrollStory(
           delete story.dataset.journeyChapter;
           story.style.removeProperty('--journey-progress');
           story.style.removeProperty('--scene-opacity');
-          story.style.removeProperty('--story-progress');
           hero.style.removeProperty('--hero-departure');
           chapters.forEach((chapter) =>
             [

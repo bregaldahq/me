@@ -1,6 +1,5 @@
 import type { RefObject } from 'react';
 import type { AnimatedTier } from '../performance';
-import type { StoryStateRef } from '../motion/story-types';
 
 export interface SceneLayout {
   x: number;
@@ -15,7 +14,6 @@ export interface SceneLayout {
 }
 export interface OrbitSceneProps {
   tier: AnimatedTier;
-  storyRef: StoryStateRef;
   layoutRef: RefObject<SceneLayout>;
   onReady: () => void;
   onFailure: () => void;

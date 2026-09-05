@@ -27,13 +27,9 @@ describe('orbital choreography', () => {
     expect(getStoryState(Number(local) / 4).phase).toBe(phase);
   });
   it('approaches, reveals, and returns to the next stable orbit', () => {
-    expect(getStoryState(0.56 / 4).cameraZ).toBeLessThan(4);
+    expect(getStoryState(0.56 / 4).approach).toBe(1);
     expect(getStoryState(0.76 / 4).artifact).toBe(1);
-    expect(getStoryState(1)).toMatchObject({
-      approach: 0,
-      orbitOpacity: 1,
-      artifact: 0,
-    });
+    expect(getStoryState(1)).toMatchObject({ approach: 0, artifact: 0 });
     expect(getStoryState(-1).progress).toBe(0);
     expect(getStoryState(2).progress).toBe(1);
     expect(getStoryState(NaN).progress).toBe(0);
