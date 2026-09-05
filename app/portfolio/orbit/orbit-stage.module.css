@@ -66,6 +66,33 @@
   height: 100%;
   object-fit: contain;
   mask-image: radial-gradient(ellipse 60% 57%, #000 48%, transparent 91%);
+  transition: opacity 1.1s ease;
+}
+:global([data-motion='ready']) .poster {
+  opacity: 0;
+}
+:global([data-motion='ready']) .monogram {
+  opacity: calc(1 - var(--hero-departure, 0));
+  transform: translate(-50%, -50%)
+    scale(calc(1 - var(--hero-departure, 0) * 0.28))
+    rotate(calc(var(--hero-departure, 0) * -30deg));
+}
+:global([data-motion='ready']) .copy {
+  transform: translateY(calc(var(--hero-departure, 0) * -45px));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .explore span {
+    animation: invitation 2.6s ease-in-out infinite;
+  }
+  @keyframes invitation {
+    0%,
+    100% {
+      transform: translateY(-3px);
+    }
+    50% {
+      transform: translateY(4px);
+    }
+  }
 }
 .monogram {
   position: absolute;
@@ -117,7 +144,7 @@
   grid-column: 1 / -1;
   text-align: center;
   font-size: 0.55rem;
-  color: color-mix(in srgb, var(--cream) 45%, transparent);
+  color: color-mix(in srgb, var(--cream) 55%, transparent);
   margin-top: 1rem;
 }
 @media (max-width: 1023px) {

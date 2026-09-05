@@ -249,6 +249,9 @@
   background: var(--purple);
   border-color: color-mix(in srgb, var(--yellow) 60%, transparent);
 }
+.layers > div[data-domain] span {
+  color: color-mix(in srgb, var(--cream) 75%, transparent);
+}
 .domainNote {
   font-size: 0.6rem;
   color: var(--yellow);
@@ -338,6 +341,33 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+}
+:global([data-motion='ready']) .splitAmounts > div,
+:global([data-motion='ready']) .layers > div,
+:global([data-motion='ready']) .traceTable tbody tr,
+:global([data-motion='ready']) .certificate,
+:global([data-motion='ready']) .reproduction {
+  transform: translateY(
+    calc((1 - var(--artifact-progress, 0)) * var(--reveal-distance, 30px))
+  );
+}
+:global([data-motion='ready']) .splitAmounts > div:nth-child(2),
+:global([data-motion='ready']) .layers > div:nth-child(2),
+:global([data-motion='ready']) .traceTable tbody tr:nth-child(2) {
+  --reveal-distance: 60px;
+}
+:global([data-motion='ready']) .splitAmounts > div:nth-child(3),
+:global([data-motion='ready']) .layers > div:nth-child(3),
+:global([data-motion='ready']) .traceTable tbody tr:nth-child(3) {
+  --reveal-distance: 90px;
+}
+:global([data-motion='ready']) .layers > div:nth-child(4),
+:global([data-motion='ready']) .traceTable tbody tr:nth-child(4) {
+  --reveal-distance: 120px;
+}
+:global([data-motion='ready']) .merkle path {
+  stroke-dasharray: 600;
+  stroke-dashoffset: calc((1 - var(--artifact-progress, 0)) * 600);
 }
 @media (max-width: 479px) {
   .toolbar {

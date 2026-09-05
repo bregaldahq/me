@@ -36,7 +36,9 @@ export function ProjectCycle({ project }: { project: PortfolioProject }) {
           </dl>
         </div>
         <div className={styles.projectDetails}>
-          <ProjectArtifact type={project.artifact} />
+          <div data-artifact-reveal className={styles.artifactReveal}>
+            <ProjectArtifact type={project.artifact} />
+          </div>
         </div>
       </div>
       <div className={styles.chapterFoot}>

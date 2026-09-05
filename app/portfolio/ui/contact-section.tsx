@@ -9,7 +9,7 @@ export function ContactSection() {
       aria-labelledby="contact-title"
     >
       <p className="technical-label">A new problem. A new possibility.</p>
-      <h2 id="contact-title">
+      <h2 id="contact-title" data-scroll-reveal>
         Let’s build
         <br />
         something thoughtful.

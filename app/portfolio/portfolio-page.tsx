@@ -1,5 +1,6 @@
 import { PROJECTS } from './project-data';
 import { OrbitStage } from './orbit/orbit-stage';
+import { OrbitEnhancement } from './orbit/orbit-enhancement';
 import { ProjectCycle } from './projects/project-cycle';
 import { SiteNav } from './ui/site-nav';
 import { StudioSection } from './ui/studio-section';
@@ -15,15 +16,16 @@ export function PortfolioPage() {
       <SiteNav />
       <main id="main-content">
         <div className={styles.story} data-orbit-story>
+          <OrbitEnhancement />
           <OrbitStage projects={PROJECTS} />
           <div aria-label="Selected work">
             {PROJECTS.map((project) => (
               <ProjectCycle key={project.id} project={project} />
             ))}
           </div>
+          <StudioSection />
+          <ContactSection />
         </div>
-        <StudioSection />
-        <ContactSection />
       </main>
       <SiteFooter />
     </>

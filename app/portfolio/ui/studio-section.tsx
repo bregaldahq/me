@@ -18,7 +18,7 @@ export function StudioSection() {
         </ExternalLink>
       </div>
       <div className={styles.studioGrid}>
-        <div>
+        <div data-scroll-reveal>
           <h2 id="studio-title">
             Small studio.
             <br />
@@ -29,7 +29,7 @@ export function StudioSection() {
             Bregalda.
           </p>
         </div>
-        <div className={styles.studioDetail}>
+        <div className={styles.studioDetail} data-scroll-reveal>
           <img
             src="/brand/bregalda_primary_lockup.svg"
             alt="Bregalda — Build • Learn • Ship"

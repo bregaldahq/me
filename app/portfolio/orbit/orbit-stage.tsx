@@ -34,7 +34,7 @@ export function OrbitStage({
           Explore the work <span aria-hidden="true">↓</span>
         </a>
       </div>
-      <div className={styles.visual}>
+      <div className={styles.visual} data-orbit-visual>
         <img
           data-orbit-fallback
           className={styles.poster}
@@ -52,7 +52,6 @@ export function OrbitStage({
             height="96"
           />
         </div>
-        <div data-orbit-canvas-root aria-hidden="true" />
       </div>
       <nav aria-label="Featured projects" className={styles.projectNav}>
         {projects.map((project) => (

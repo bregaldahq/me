@@ -113,10 +113,67 @@
   color: var(--cream);
   isolation: isolate;
 }
+.story[data-motion='ready'] .studio {
+  background: linear-gradient(
+    100deg,
+    var(--cream) 40%,
+    color-mix(in srgb, var(--cream) 91%, transparent)
+  );
+  color: var(--ink);
+}
+.story[data-motion='ready'] .contact {
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--purple) 90%, transparent),
+    color-mix(in srgb, var(--purple) 55%, transparent)
+  );
+}
+.story[data-motion='ready'] .chapterCopy {
+  background: radial-gradient(
+    ellipse at left,
+    color-mix(in srgb, var(--ink) 88%, transparent),
+    transparent 85%
+  );
+}
 .chapter {
   position: relative;
-  padding: clamp(5rem, 11vw, 11rem) var(--page-gutter) 3rem;
+  padding: clamp(3rem, 5vw, 5rem) var(--page-gutter) 3rem;
   border-top: 1px solid color-mix(in srgb, var(--cream) 12%, transparent);
+}
+.artifactReveal {
+  transform-origin: 50% 60%;
+}
+.story[data-motion='ready'] .artifactReveal {
+  opacity: var(--artifact-progress, 0);
+  transform: perspective(1200px)
+    translateY(calc((1 - var(--artifact-progress, 0)) * 100px))
+    rotateX(calc((1 - var(--artifact-progress, 0)) * 12deg))
+    scale(calc(0.76 + var(--artifact-progress, 0) * 0.24));
+}
+.story[data-motion='ready'] .artifactReveal:focus-within {
+  opacity: 1;
+  transform: none;
+}
+.story[data-motion='ready'] .evidence {
+  transform: translateY(calc((1 - var(--evidence-progress, 0)) * 36px));
+}
+@media (min-width: 1024px) {
+  .story:is([data-motion='loading'], [data-motion='ready']) .chapterGrid {
+    align-items: start;
+  }
+  .story:is([data-motion='loading'], [data-motion='ready']) .evidence {
+    margin-top: 2rem;
+  }
+  .story:is([data-motion='loading'], [data-motion='ready']) .projectDetails {
+    position: sticky;
+    top: calc(var(--nav-height) + 2rem);
+  }
+}
+@media (max-width: 1023px) {
+  .story[data-motion='ready'] .artifactReveal {
+    transform: translateY(calc((1 - var(--artifact-progress, 0)) * 42px))
+      scale(calc(0.94 + var(--artifact-progress, 0) * 0.06));
+  }
 }
 .chapterGrid {
   display: grid;
@@ -139,7 +196,7 @@
   color: var(--yellow);
 }
 .projectName span {
-  color: color-mix(in srgb, var(--cream) 44%, transparent);
+  color: color-mix(in srgb, var(--cream) 55%, transparent);
 }
 .chapterCopy h2 {
   font-size: clamp(2.8rem, 5.25vw, 6rem);
@@ -186,7 +243,7 @@
 }
 .chapterFoot {
   max-width: var(--content-max);
-  margin: 4rem auto 0;
+  margin: 2.5rem auto 0;
 }
 .chapterFoot ul {
   display: flex;
@@ -210,6 +267,7 @@
   padding: 3rem var(--page-gutter) 8rem;
   position: relative;
   background: var(--cream);
+  color: var(--ink);
 }
 .studioTop {
   display: flex;
